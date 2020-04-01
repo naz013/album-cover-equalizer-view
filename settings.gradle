@@ -1,0 +1,3 @@
+rootProject.name='AlbumCoverEqualizer Example'
+include ':app'
+include ':library'
