@@ -14,14 +14,23 @@ import android.view.View
 import android.view.WindowManager
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
+import androidx.core.graphics.drawable.toBitmap
+import androidx.dynamicanimation.animation.FloatPropertyCompat
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 
 class AlbumCoverEqView : View {
 
     private var bars = listOf<BarView>()
-    private val barPaint = Paint()
-
-    @ColorInt
-    private var dividerColor: Int = Color.WHITE
+    private val barPaint = Paint().apply {
+        this.color = Color.WHITE
+        this.alpha = 255
+        this.style = Paint.Style.FILL
+    }
+    private var cover: Bitmap? = null
+    private var numberOfBars = 8
+    private var dividerWidth = 2f
+    private val viewBounds = Rect()
 
     constructor(context: Context) : super(context) {
         initView(context, null)
@@ -40,12 +49,59 @@ class AlbumCoverEqView : View {
     }
 
     private fun initView(context: Context, attrs: AttributeSet?) {
+        dividerWidth = dp2px(4).toFloat()
+    }
 
+    fun setDividerWidth(value: Float) {
+        dividerWidth = value
+        calculateBars(measuredWidth, measuredHeight)
+        invalidate()
+    }
+
+    fun getNumberOfBars() = numberOfBars
+
+    fun setNumberOfBars(value: Int) {
+        numberOfBars = value
+        calculateBars(measuredWidth, measuredHeight)
+        invalidate()
+    }
+
+    fun setWaveHeights(floatArray: FloatArray) {
+        if (floatArray.size != numberOfBars) {
+            throw IllegalArgumentException("Array size must be equal to number of bars!")
+        }
+        bars.forEachIndexed { index, barView ->
+            if (index % 2 == 0) {
+                barView.targetPercent = floatArray[index / 2]
+                barView.animate()
+            }
+        }
+    }
+
+    @ColorInt
+    fun getDividerColor() = barPaint.color
+
+    fun setDividerColor(@ColorInt color: Int) {
+        barPaint.color = color
+        invalidate()
+    }
+
+    fun getCoverImage() = cover
+
+    fun setCoverImage(coverImage: Bitmap?) {
+        cover = coverImage
+        invalidate()
+    }
+
+    fun setCoverImage(coverImage: Drawable?) {
+        cover = coverImage?.toBitmap(measuredWidth, measuredHeight)
+        invalidate()
     }
 
     override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
         if (canvas != null) {
-            canvas.drawColor(dividerColor)
+            cover?.let { canvas.drawBitmap(it, null, viewBounds, null) }
             bars.forEach { it.draw(canvas, barPaint) }
         }
     }
@@ -55,20 +111,38 @@ class AlbumCoverEqView : View {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
         setMeasuredDimension(width, height)
-        calculateObjects(width, height)
+        calculateBars(width, height)
     }
 
-    private fun calculateObjects(width: Int, height: Int) {
-        printLog("calculateObjects: $width, $height")
+    private fun calculateBars(width: Int, height: Int) {
+        printLog("calculateBars: $width, $height")
+        viewBounds.left = 0
+        viewBounds.top = 0
+        viewBounds.right = width
+        viewBounds.bottom = height
 
-        val padding = dp2px(4).toFloat()
+        val numberOfDividers = numberOfBars - 1
+        val barWidth = (width - (numberOfDividers * dividerWidth)) / numberOfBars
+        var left = 0f
+        val list = mutableListOf<BarView>()
+        for (i in 0 until (numberOfBars * 2 - 1)) {
+            left += if (i % 2 == 0) {
+                val bounds = RectF(left, 0f, left + barWidth, height.toFloat())
+                list.add(BarView(bounds, BarType.NORMAL))
+                barWidth
+            } else {
+                val bounds = RectF(left, 0f, left + dividerWidth, height.toFloat())
+                list.add(BarView(bounds, BarType.DIVIDER))
+                dividerWidth
+            }
+        }
 
-
+        bars = list
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is Bundle) {
-            dividerColor = state.getInt(COLOR_DIVIDER_KEY, dividerColor)
+            barPaint.color = state.getInt(COLOR_DIVIDER_KEY, barPaint.color)
             super.onRestoreInstanceState(state.getParcelable(SUPER_KEY))
         } else {
             super.onRestoreInstanceState(state)
@@ -78,7 +152,7 @@ class AlbumCoverEqView : View {
     override fun onSaveInstanceState(): Parcelable? {
         val savedInstance = Bundle()
         savedInstance.putParcelable(SUPER_KEY, super.onSaveInstanceState())
-        savedInstance.putInt(COLOR_DIVIDER_KEY, dividerColor)
+        savedInstance.putInt(COLOR_DIVIDER_KEY, barPaint.color)
         return savedInstance
     }
 
@@ -125,14 +199,61 @@ class AlbumCoverEqView : View {
         if (SHOW_LOGS) Log.d("AlbumCoverEqView", message)
     }
 
-    private inner class BarView(
-        val srcRect: RectF = RectF(),
-        val dstRect: RectF = RectF()
-    ) {
+    private inner class BarView(private val bounds: RectF = RectF(), private val barType: BarType) {
+
+        var percent: Float = 100.0f
+            set(value) {
+                field = value
+                calculateBars(value)
+            }
+        var targetPercent = 100.0f
+        private val topBar = RectF(bounds)
+        private val bottomBar = RectF(bounds)
+        private val percentPropertyAnim = object : FloatPropertyCompat<Float>("bar_percent") {
+            override fun setValue(point: Float?, value: Float) {
+                percent = value
+                invalidate()
+            }
+
+            override fun getValue(point: Float?): Float {
+                return point ?: 50.0f
+            }
+        }
+
+        private fun calculateBars(value: Float) {
+            if (barType == BarType.NORMAL) {
+                val barHeight = bounds.height() / 2f * (value / 100f)
+
+                topBar.top = bounds.top
+                topBar.bottom = bounds.top + barHeight
+
+                bottomBar.bottom = bounds.bottom
+                bottomBar.top = bounds.bottom - barHeight
+            }
+        }
+
+        fun animate() {
+            if (barType == BarType.DIVIDER) return
+            if (targetPercent <= 0.0f) return
+            SpringAnimation(percent, percentPropertyAnim, targetPercent).apply {
+                spring.stiffness = SpringForce.STIFFNESS_VERY_LOW
+                spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+                start()
+            }
+        }
 
         fun draw(canvas: Canvas, paint: Paint) {
-
+            if (barType == BarType.DIVIDER) {
+                canvas.drawRect(topBar, paint)
+            } else {
+                canvas.drawRect(topBar, paint)
+                canvas.drawRect(bottomBar, paint)
+            }
         }
+    }
+
+    private enum class BarType {
+        NORMAL, DIVIDER
     }
 
     private companion object {
