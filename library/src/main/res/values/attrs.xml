@@ -2,6 +2,7 @@
 <resources>
     <declare-styleable name="AlbumCoverEqView">
         <attr name="acv_barColor" format="color" />
+        <attr name="acv_dividerColor" format="color" />
         <attr name="acv_dividerWidth" format="dimension" />
         <attr name="acv_numberOfBars" format="integer" />
         <attr name="acv_coverDrawable" format="reference" />

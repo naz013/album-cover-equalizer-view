@@ -15,8 +15,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="32dp"
         app:acv_animationSpeed="slow"
-        app:acv_barColor="#ff0000"
-        app:acv_dividerWidth="1dp"
-        app:acv_numberOfBars="21" />
+        app:acv_barColor="#ffffff"
+        app:acv_dividerColor="#ff0000"
+        app:acv_dividerWidth="2dp"
+        app:acv_numberOfBars="15" />
 
 </LinearLayout>

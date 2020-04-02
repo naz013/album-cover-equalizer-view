@@ -27,6 +27,12 @@ class AlbumCoverEqView : View {
         this.alpha = 255
         this.style = Paint.Style.FILL
     }
+
+    @ColorInt
+    private var dividerColor = Color.WHITE
+
+    @ColorInt
+    private var barColor = Color.WHITE
     private var cover: Bitmap? = null
     private var numberOfBars = 8
     private var dividerWidth = 2f
@@ -55,8 +61,9 @@ class AlbumCoverEqView : View {
             val a =
                 context.theme.obtainStyledAttributes(attrs, R.styleable.AlbumCoverEqView, 0, 0)
             try {
-                barPaint.color =
-                    a.getColor(R.styleable.AlbumCoverEqView_acv_barColor, barPaint.color)
+                barColor = a.getColor(R.styleable.AlbumCoverEqView_acv_barColor, barColor)
+                dividerColor =
+                    a.getColor(R.styleable.AlbumCoverEqView_acv_dividerColor, dividerColor)
                 numberOfBars = a.getInt(R.styleable.AlbumCoverEqView_acv_numberOfBars, numberOfBars)
                 animationStiffness = stiffness(
                     a.getInt(
@@ -117,10 +124,18 @@ class AlbumCoverEqView : View {
     }
 
     @ColorInt
-    fun getDividerColor() = barPaint.color
+    fun getDividerColor() = dividerColor
 
     fun setDividerColor(@ColorInt color: Int) {
-        barPaint.color = color
+        dividerColor = color
+        invalidate()
+    }
+
+    @ColorInt
+    fun getBarColor() = barColor
+
+    fun setBarColor(@ColorInt color: Int) {
+        barColor = color
         invalidate()
     }
 
@@ -180,7 +195,8 @@ class AlbumCoverEqView : View {
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is Bundle) {
-            barPaint.color = state.getInt(COLOR_DIVIDER_KEY, barPaint.color)
+            barColor = state.getInt(COLOR_BAR_KEY, barColor)
+            dividerColor = state.getInt(COLOR_DIVIDER_KEY, dividerColor)
             numberOfBars = state.getInt(BARS_COUNT_KEY, numberOfBars)
             dividerWidth = state.getFloat(DIVIDER_WIDTH_KEY, dividerWidth)
             animationStiffness = state.getFloat(STIFFNESS_KEY, animationStiffness)
@@ -193,7 +209,8 @@ class AlbumCoverEqView : View {
     override fun onSaveInstanceState(): Parcelable? {
         val savedInstance = Bundle()
         savedInstance.putParcelable(SUPER_KEY, super.onSaveInstanceState())
-        savedInstance.putInt(COLOR_DIVIDER_KEY, barPaint.color)
+        savedInstance.putInt(COLOR_DIVIDER_KEY, dividerColor)
+        savedInstance.putInt(COLOR_BAR_KEY, barColor)
         savedInstance.putInt(BARS_COUNT_KEY, numberOfBars)
         savedInstance.putFloat(DIVIDER_WIDTH_KEY, dividerWidth)
         savedInstance.putFloat(STIFFNESS_KEY, animationStiffness)
@@ -288,8 +305,10 @@ class AlbumCoverEqView : View {
 
         fun draw(canvas: Canvas, paint: Paint) {
             if (barType == BarType.DIVIDER) {
+                paint.color = dividerColor
                 canvas.drawRect(topBar, paint)
             } else {
+                paint.color = barColor
                 canvas.drawRect(topBar, paint)
                 canvas.drawRect(bottomBar, paint)
             }
@@ -316,6 +335,7 @@ class AlbumCoverEqView : View {
 
         private const val SUPER_KEY = "super"
         private const val COLOR_DIVIDER_KEY = "color_divider"
+        private const val COLOR_BAR_KEY = "color_bar"
         private const val STIFFNESS_KEY = "stiffness"
         private const val DIVIDER_WIDTH_KEY = "divider_width"
         private const val BARS_COUNT_KEY = "bars_count"
