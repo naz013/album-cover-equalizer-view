@@ -1,8 +1,11 @@
 package com.github.naz013.albumcoverequalizer.example
 
-import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.RadioGroup
+import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.appcompat.widget.AppCompatSeekBar
 import com.github.naz013.albumcoverequalizer.AlbumCoverEqView
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
@@ -13,12 +16,35 @@ class MainActivity : AppCompatActivity() {
     private val random = Random()
     private var job: Job? = null
     private lateinit var albumView: AlbumCoverEqView
+    private lateinit var playPauseButton: AppCompatImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        playPauseButton = findViewById(R.id.playPauseButton)
         albumView = findViewById(R.id.albumView)
+        playPauseButton.setOnClickListener { playPauseClick() }
+        findViewById<RadioGroup>(R.id.radioGroup).setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radioSlow -> albumView.setAnimationSpeed(AlbumCoverEqView.ANIMATION_SLOW)
+                R.id.radioMedium -> albumView.setAnimationSpeed(AlbumCoverEqView.ANIMATION_MEDIUM)
+                R.id.radioFast -> albumView.setAnimationSpeed(AlbumCoverEqView.ANIMATION_FAST)
+            }
+        }
+        findViewById<AppCompatSeekBar>(R.id.numberSeekBar).setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                albumView.setNumberOfBars(progress + 5)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+        })
+        findViewById<AppCompatSeekBar>(R.id.numberSeekBar).progress = 11
 
         GlobalScope.launch(Dispatchers.IO) {
             val bitmap = Picasso.get()
@@ -32,23 +58,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        job = GlobalScope.launch(Dispatchers.Default) {
-            while (true) {
-                if (!isActive) break
-                val array = newFloatArray(albumView.getNumberOfBars())
-                withContext(Dispatchers.Main) {
-                    albumView.setWaveHeights(array)
+    private fun playPauseClick() {
+        val j = job
+        job = if (j == null) {
+            GlobalScope.launch(Dispatchers.Default) {
+                while (true) {
+                    if (!isActive) break
+                    val array = newFloatArray(albumView.getNumberOfBars())
+                    withContext(Dispatchers.Main) {
+                        albumView.setWaveHeights(array)
+                    }
+                    delay(250)
                 }
-                delay(250)
             }
+        } else {
+            j.cancel()
+            albumView.showFullCover()
+            null
+        }
+        updateButtonIcon()
+    }
+
+    private fun updateButtonIcon() {
+        if (job == null) {
+            playPauseButton.setImageResource(R.drawable.ic_play_circle_filled_black_24dp)
+        } else {
+            playPauseButton.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp)
         }
     }
 
     override fun onPause() {
         super.onPause()
         job?.cancel()
+        job = null
+        updateButtonIcon()
     }
 
     private fun newFloatArray(size: Int): FloatArray {

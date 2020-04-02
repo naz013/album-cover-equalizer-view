@@ -85,11 +85,12 @@ class AlbumCoverEqView : View {
                 a.recycle()
             }
         }
+        showFullCover()
     }
 
     fun showFullCover() {
         val array = FloatArray(numberOfBars)
-        for (i in 0 until numberOfBars) array[i] = 100.0f
+        for (i in 0 until numberOfBars) array[i] = 0.0f
         setWaveHeights(array)
     }
 
@@ -328,7 +329,7 @@ class AlbumCoverEqView : View {
         NORMAL, DIVIDER
     }
 
-    private companion object {
+    companion object {
         const val ANIMATION_SLOW = 0
         const val ANIMATION_MEDIUM = 1
         const val ANIMATION_FAST = 2

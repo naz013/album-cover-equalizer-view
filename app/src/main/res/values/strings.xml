@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AlbumCoverEqualizer Example</string>
+    <string name="slow">Slow</string>
+    <string name="fast">Fast</string>
+    <string name="medium">Medium</string>
+    <string name="number_of_bars">Number of bars</string>
+    <string name="animation_speed">Animation speed</string>
 </resources>

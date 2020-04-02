@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
+    android:background="?colorPrimary"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -15,9 +15,72 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="32dp"
         app:acv_animationSpeed="slow"
-        app:acv_barColor="#ffffff"
-        app:acv_dividerColor="#ff0000"
+        app:acv_barColor="?colorPrimary"
+        app:acv_dividerColor="?colorPrimary"
         app:acv_dividerWidth="2dp"
         app:acv_numberOfBars="15" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/playPauseButton"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        app:srcCompat="@drawable/ic_play_circle_filled_black_24dp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/animation_speed"
+        android:textColor="?colorAccent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioSlow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/slow" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/medium" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:id="@+id/radioFast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/fast" />
+
+    </RadioGroup>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/number_of_bars"
+        android:textColor="?colorAccent" />
+
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/numberSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:max="45" />
 
 </LinearLayout>
