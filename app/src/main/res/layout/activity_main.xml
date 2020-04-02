@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,6 +13,10 @@
         android:layout_width="256dp"
         android:layout_height="256dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp" />
+        android:layout_marginTop="32dp"
+        app:acv_animationSpeed="slow"
+        app:acv_barColor="#ff0000"
+        app:acv_dividerWidth="1dp"
+        app:acv_numberOfBars="21" />
 
 </LinearLayout>

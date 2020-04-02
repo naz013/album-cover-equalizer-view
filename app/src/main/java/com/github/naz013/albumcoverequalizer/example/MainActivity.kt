@@ -19,8 +19,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         albumView = findViewById(R.id.albumView)
-        albumView.setNumberOfBars(10)
-        albumView.setDividerColor(Color.WHITE)
 
         GlobalScope.launch(Dispatchers.IO) {
             val bitmap = Picasso.get()
@@ -43,7 +41,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     albumView.setWaveHeights(array)
                 }
-                delay(500)
+                delay(250)
             }
         }
     }

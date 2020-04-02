@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AlbumCoverEqView">
+        <attr name="acv_barColor" format="color" />
+        <attr name="acv_dividerWidth" format="dimension" />
+        <attr name="acv_numberOfBars" format="integer" />
+        <attr name="acv_coverDrawable" format="reference" />
+        <attr name="acv_animationSpeed" format="enum">
+            <enum name="slow" value="0" />
+            <enum name="medium" value="1" />
+            <enum name="fast" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>

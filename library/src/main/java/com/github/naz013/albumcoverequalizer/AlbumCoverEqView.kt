@@ -30,6 +30,7 @@ class AlbumCoverEqView : View {
     private var cover: Bitmap? = null
     private var numberOfBars = 8
     private var dividerWidth = 2f
+    private var animationStiffness = SpringForce.STIFFNESS_LOW
     private val viewBounds = Rect()
 
     constructor(context: Context) : super(context) {
@@ -50,9 +51,46 @@ class AlbumCoverEqView : View {
 
     private fun initView(context: Context, attrs: AttributeSet?) {
         dividerWidth = dp2px(4).toFloat()
+        attrs?.let {
+            val a =
+                context.theme.obtainStyledAttributes(attrs, R.styleable.AlbumCoverEqView, 0, 0)
+            try {
+                barPaint.color =
+                    a.getColor(R.styleable.AlbumCoverEqView_acv_barColor, barPaint.color)
+                numberOfBars = a.getInt(R.styleable.AlbumCoverEqView_acv_numberOfBars, numberOfBars)
+                animationStiffness = stiffness(
+                    a.getInt(
+                        R.styleable.AlbumCoverEqView_acv_animationSpeed,
+                        ANIMATION_SLOW
+                    )
+                )
+                dividerWidth = a.getDimensionPixelSize(
+                    R.styleable.AlbumCoverEqView_acv_dividerWidth,
+                    dividerWidth.toInt()
+                ).toFloat()
+                val imageId = a.getResourceId(R.styleable.AlbumCoverEqView_acv_coverDrawable, 0)
+                if (imageId != 0) {
+                    cover = BitmapFactory.decodeResource(resources, imageId)
+                }
+            } catch (e: Exception) {
+                printLog("initView: " + e.localizedMessage)
+            } finally {
+                a.recycle()
+            }
+        }
     }
 
-    fun setDividerWidth(value: Float) {
+    fun showFullCover() {
+        val array = FloatArray(numberOfBars)
+        for (i in 0 until numberOfBars) array[i] = 100.0f
+        setWaveHeights(array)
+    }
+
+    fun setAnimationSpeed(speed: Int) {
+        animationStiffness = stiffness(speed)
+    }
+
+    fun setDividerWidth(@Px value: Float) {
         dividerWidth = value
         calculateBars(measuredWidth, measuredHeight)
         invalidate()
@@ -143,6 +181,9 @@ class AlbumCoverEqView : View {
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is Bundle) {
             barPaint.color = state.getInt(COLOR_DIVIDER_KEY, barPaint.color)
+            numberOfBars = state.getInt(BARS_COUNT_KEY, numberOfBars)
+            dividerWidth = state.getFloat(DIVIDER_WIDTH_KEY, dividerWidth)
+            animationStiffness = state.getFloat(STIFFNESS_KEY, animationStiffness)
             super.onRestoreInstanceState(state.getParcelable(SUPER_KEY))
         } else {
             super.onRestoreInstanceState(state)
@@ -153,6 +194,9 @@ class AlbumCoverEqView : View {
         val savedInstance = Bundle()
         savedInstance.putParcelable(SUPER_KEY, super.onSaveInstanceState())
         savedInstance.putInt(COLOR_DIVIDER_KEY, barPaint.color)
+        savedInstance.putInt(BARS_COUNT_KEY, numberOfBars)
+        savedInstance.putFloat(DIVIDER_WIDTH_KEY, dividerWidth)
+        savedInstance.putFloat(STIFFNESS_KEY, animationStiffness)
         return savedInstance
     }
 
@@ -236,7 +280,7 @@ class AlbumCoverEqView : View {
             if (barType == BarType.DIVIDER) return
             if (targetPercent <= 0.0f) return
             SpringAnimation(percent, percentPropertyAnim, targetPercent).apply {
-                spring.stiffness = SpringForce.STIFFNESS_VERY_LOW
+                spring.stiffness = animationStiffness
                 spring.dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
                 start()
             }
@@ -252,13 +296,29 @@ class AlbumCoverEqView : View {
         }
     }
 
+    private fun stiffness(value: Int): Float {
+        return when (value) {
+            0 -> SpringForce.STIFFNESS_LOW
+            1 -> SpringForce.STIFFNESS_MEDIUM
+            2 -> SpringForce.STIFFNESS_HIGH
+            else -> SpringForce.STIFFNESS_LOW
+        }
+    }
+
     private enum class BarType {
         NORMAL, DIVIDER
     }
 
     private companion object {
+        const val ANIMATION_SLOW = 0
+        const val ANIMATION_MEDIUM = 1
+        const val ANIMATION_FAST = 2
+
         private const val SUPER_KEY = "super"
-        private const val COLOR_DIVIDER_KEY = "color_thumb"
+        private const val COLOR_DIVIDER_KEY = "color_divider"
+        private const val STIFFNESS_KEY = "stiffness"
+        private const val DIVIDER_WIDTH_KEY = "divider_width"
+        private const val BARS_COUNT_KEY = "bars_count"
         private const val SHOW_LOGS = true
     }
 }
