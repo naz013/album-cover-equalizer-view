@@ -46,7 +46,7 @@ Default:
 And then use:
 ```kotlin
 val array = newFloatArray(albumView.getNumberOfBars())
-albumView.setWaveHeights(array)
+albumView.setWaveHeights(array) //Accept array of floats with values from 0.0 to 100.0
 ```
 
 License
