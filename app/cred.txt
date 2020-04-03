@@ -1,0 +1,3 @@
+P: 03042020
+Alias: com.github.naz013.albumcoverequalizer
+P: 03042020
