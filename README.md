@@ -1,5 +1,6 @@
 # album-cover-equalizer-view
 Simple equalizer visualization view for Android OS
+
 [![](https://jitpack.io/v/naz013/album-cover-equalizer-view.svg)](https://jitpack.io/#naz013/album-cover-equalizer-view)
 
 Design by Samuel C.: [Dribble](https://dribbble.com/shots/10746051-009-Music-Player)
